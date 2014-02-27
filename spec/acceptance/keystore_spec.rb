@@ -3,13 +3,13 @@ require 'spec_helper_acceptance'
 describe 'managing java keystores', :unless => UNSUPPORTED_PLATFORMS.include?(fact('operatingsystem')) do
   it 'creates a keystore' do
     pp = <<-EOS
-      class { 'java': }
       java_ks { 'puppetca:keystore':
         ensure       => latest,
         certificate  => '#{default['puppetpath']}/ssl/certs/ca.pem',
         target       => '/etc/keystore.ks',
         password     => 'puppet',
         trustcacerts => true,
+        path         => ['/usr/java/bin/','/opt/puppet/bin/'],
       }
     EOS
 
@@ -17,7 +17,7 @@ describe 'managing java keystores', :unless => UNSUPPORTED_PLATFORMS.include?(fa
   end
 
   it 'verifies the keystore' do
-    shell('keytool -list -v -keystore /etc/keystore.ks -storepass puppet') do |r|
+    shell('/usr/java/bin/keytool -list -v -keystore /etc/keystore.ks -storepass puppet') do |r|
       expect(r.exit_code).to be_zero
       expect(r.stdout).to match(/Your keystore contains 1 entry/)
       expect(r.stdout).to match(/Alias name: puppetca/)
